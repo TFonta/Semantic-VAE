@@ -24,6 +24,10 @@ In the `samples` folder, some images and masks from CelebMask-HQ are given.
 - Style Transfer: Load an image, the corresponding mask and another image, then select a face part and finally on `generate style`
 - Generate/Perturb semantic mask parts: Load an image and the corresponding mask and select a face part. Then, click either on `generate` or `perturb` part, and finally on `edit`
 
+### Semantic Image Synthesis Generator
+This demo uses the CA2-SIS method described in this [paper](https://arxiv.org/pdf/2308.16071.pdf) to synthesize the RGB images from the mask. You can find the code for this method at the following [github](https://github.com/TFonta/CA2SIS).
+
+Our Semantic-VAE model is independent from the SIS generator. so you can use it to generate/manipulate the masks and use them in conjunction to any other SIS method.
 
 ### Citation
 
@@ -39,3 +43,7 @@ If you find our work useful, cite us!
   organization={Springer}
 }
 ```
+
+### Contacts
+
+For any inquiry, feel free to drop an email to tomaso.fontanini@unipr.it or claudio.ferrari2@unipr.it.
