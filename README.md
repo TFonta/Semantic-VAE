@@ -1,0 +1,1 @@
+## Official Demo for Paper: Automatic Generation of Semantic Parts for Face Image Synthesis
