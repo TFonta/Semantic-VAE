@@ -103,7 +103,11 @@ class VAE_net(nn.Module):
         super(VAE_net, self).__init__()
         #self.cuda = True
         self.opt = opt
-        
+        if len(opt.gpu_ids) > 0:
+            self.device = 'cuda:0'
+        else:
+            self.device = 'cpu'
+
         self.parts_for_dec = nc
 
         if self.opt.contain_dontcare_label:
@@ -134,7 +138,7 @@ class VAE_net(nn.Module):
                 self.lstm = nn.LSTM(self.latent_variable_size, self.latent_variable_size, num_layers = self.opt.lstm_num, batch_first=True)            
 
         if self.opt.do_perm:
-            self.permutations = torch.LongTensor([1,0,2] + list(range(3,18))).cuda()
+            self.permutations = torch.LongTensor([1,0,2] + list(range(3,18))).to(self.device)
 
         
 
@@ -162,7 +166,7 @@ class VAE_net(nn.Module):
         return c_layer(out,s)
     
     def kl_loss(self, mu, log_var):
-        kld_loss = 0 #torch.Tensor([0]).cuda()
+        kld_loss = 0 #torch.Tensor([0]).to(self.device)
         
         # for i in range(mu.size(1)):
         #     mu_el = mu[:,i]
@@ -200,8 +204,8 @@ class VAE_net(nn.Module):
                 hidden_size = self.opt.lstm_num*2
             else:
                 hidden_size = self.opt.lstm_num
-            hidden = (torch.randn(hidden_size, z.size(0), self.latent_variable_size).cuda(), 
-                    torch.randn(hidden_size, z.size(0), self.latent_variable_size).cuda())
+            hidden = (torch.randn(hidden_size, z.size(0), self.latent_variable_size).to(self.device), 
+                    torch.randn(hidden_size, z.size(0), self.latent_variable_size).to(self.device))
             out, hidden = self.lstm(z_, hidden)
         else:
             out = z_

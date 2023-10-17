@@ -198,6 +198,7 @@ class BaseOptions():
             if id >= 0:
                 opt.gpu_ids.append(id)
         #opt.gpu_ids = [torch.cuda.device(i) for i in range(torch.cuda.device_count())]
+
         
         print("Devices num: {}".format(len(opt.gpu_ids)))
         for i in range(len(opt.gpu_ids)):

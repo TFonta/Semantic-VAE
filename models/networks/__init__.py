@@ -51,7 +51,9 @@ def create_network(cls, opt):
 def define_G(opt):
     if not opt.SEAN:
         G = RGB_model(opt, opt.label_nc,32,32, opt.style_dim)
-        return G.cuda() 
+        if len(opt.gpu_ids) > 0:
+            G.cuda()
+        return G
     else:
         netG_cls = find_network_using_name(opt.netG, 'generator')
         return create_network(netG_cls, opt)
@@ -62,7 +64,9 @@ def define_D(opt):
     return create_network(netD_cls, opt)
 
 def define_D_mask(opt):
-    D = MultiscaleDiscriminator(opt, gen_mask = True).cuda()
+    D = MultiscaleDiscriminator(opt, gen_mask = True)
+    if len(opt.gpu_ids) > 0:
+        D.cuda()
     return D
 
 def define_E(opt):

@@ -57,6 +57,13 @@ class VAEModel(torch.nn.Module):
     def __init__(self, opt):
         super().__init__()
         self.opt = opt
+
+        if self.use_gpu():
+            self.device = 'cuda:0'
+        else:
+            self.device = 'cpu'
+                
+        
         self.FloatTensor = torch.cuda.FloatTensor if self.use_gpu() \
             else torch.FloatTensor
         self.ByteTensor = torch.cuda.ByteTensor if self.use_gpu() \
@@ -68,7 +75,7 @@ class VAEModel(torch.nn.Module):
 
         self.weights = torch.tensor([1., 0.6899, 0.9764, 0.9987, 0.9992, 0.9992, 0.9968, 0.9968, 0.9970, 0.9975,
                 0.9982, 0.9968, 0.9935, 0.6729, 0.9905, 0.9991, 1.0019, 0.9703, 0.9783],
-            device='cuda:0')
+            device=self.device)
 
         if opt.isTrain:
             self.criterionGAN = networks.GANLoss(
@@ -166,7 +173,7 @@ class VAEModel(torch.nn.Module):
 
     def initialize_networks(self, opt):
 
-        netG = VAE_net(opt, 18, 256).cuda()
+        netG = VAE_net(opt, 18, 256).to(self.device)
         netD = networks.define_D(opt) if opt.isTrain else None
         
         if not opt.no_model_load:

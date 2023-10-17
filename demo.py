@@ -38,6 +38,10 @@ class Ex(QWidget, Ui_Form):
         self.model = model
         self.vae_model = vae_model
         self.opt = opt
+        if len(opt.gpu_ids) > 0:
+            self.device = 'cuda:0'
+        else:
+            self.device = 'cpu'
 
         params = get_params(self.opt, (256,256))
         self.transform_mask = get_transform(self.opt, params, method=Image.NEAREST, normalize=False)
@@ -250,7 +254,7 @@ class Ex(QWidget, Ui_Form):
         targets_extend = targets.clone()        
         targets_extend.unsqueeze_(1)  # convert to Nx1xHxW
         one_hot = torch.FloatTensor(targets_extend.size(0), nclasses, targets_extend.size(2), targets_extend.size(3)).zero_()
-        one_hot = one_hot.cuda()
+        one_hot = one_hot.to(self.device)
         one_hot.scatter_(1, targets_extend, 1)
         return one_hot
 
@@ -271,7 +275,7 @@ class Ex(QWidget, Ui_Form):
         mask_m_19 = self.preprocess_mask(mask_m.unsqueeze(0).long())
 
         p = self.scene.mode
-        generated_m = self.vae_model.generate_parts(mask_m_19.cuda(), [p])
+        generated_m = self.vae_model.generate_parts(mask_m_19.to(self.device), [p])
 
         generated_m = torch.argmax(generated_m, dim=1)    
         result = np.asarray(generated_m.detach().cpu(), dtype=np.uint8).copy()
@@ -307,7 +311,7 @@ class Ex(QWidget, Ui_Form):
         mask_m_19 = self.preprocess_mask(mask_m.unsqueeze(0).long())
 
         p = self.scene.mode
-        generated_m = self.vae_model.generate_perturbations(mask_m_19.cuda(), [p])
+        generated_m = self.vae_model.generate_perturbations(mask_m_19.to(self.device), [p])
 
         generated_m = torch.argmax(generated_m, dim=1)    
         result = np.asarray(generated_m.detach().cpu(), dtype=np.uint8).copy()
@@ -354,9 +358,9 @@ class Ex(QWidget, Ui_Form):
         #print(mask.size(), mask_m.size(), img.size())
 
         start_t = time.time()
-        generated = self.model.netG(img.unsqueeze(0).cuda(),
-                               mask_19.cuda(), 
-                               mask_m_19.cuda())
+        generated = self.model.netG(img.unsqueeze(0).to(self.device),
+                               mask_19.to(self.device), 
+                               mask_m_19.to(self.device))
 
         # generated = model.inference(torch.FloatTensor([mask_m.numpy()]), torch.FloatTensor([mask.numpy()]), torch.FloatTensor([img.numpy()]))   
         end_t = time.time()
@@ -404,11 +408,11 @@ class Ex(QWidget, Ui_Form):
 
         start_t = time.time()
 
-        z = self.model.netG.encode(mask_m_19[:,1:].cuda())
+        z = self.model.netG.encode(mask_m_19[:,1:].to(self.device))
                     
-        s_org = self.model.netG.style_encoder(img.unsqueeze(0).cuda(), mask_19.cuda())
+        s_org = self.model.netG.style_encoder(img.unsqueeze(0).to(self.device), mask_19.to(self.device))
 
-        s_swap = self.model.netG.style_encoder(img_style.unsqueeze(0).cuda(), mask_style_19.cuda())
+        s_swap = self.model.netG.style_encoder(img_style.unsqueeze(0).to(self.device), mask_style_19.to(self.device))
 
         for part in p:
             s_org[:,part] = s_swap[:,part].clone()  
